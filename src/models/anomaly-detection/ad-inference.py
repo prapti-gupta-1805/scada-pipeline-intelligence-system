@@ -195,11 +195,10 @@ def predict(sample_dict, explain=True):
 
             {
 
-                "feature": feature,
-
-                "value": data["value"],
-
-                "z_score": data["z_score"]
+        "feature": feature,
+        "value": data["value"],
+        "expected": round(data["mean"], 2),
+        "z_score": data["z_score"]
 
             }
 
