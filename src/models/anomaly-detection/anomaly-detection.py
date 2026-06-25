@@ -254,3 +254,6 @@ plt.savefig(
 plt.close()
 
 print("✓ Saved anomaly_analysis.png")
+print("\n" + "=" * 80)
+print("ANOMALY DETECTION TRAINING COMPLETED")
+print("=" * 80)
