@@ -168,7 +168,7 @@ def predict(sample_dict, explain=True):
 
     status = "Anomaly" if prediction == -1 else "Normal"
     confidence = calculate_confidence(anomaly_score)
-    risk_level = calculate_risk_level(confidence)  # Now uses confidence
+    risk_level = calculate_risk_level(confidence) 
 
     result = {
         "status": status,
