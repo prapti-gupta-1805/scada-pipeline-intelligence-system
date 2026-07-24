@@ -1,1 +1,79 @@
-..vscode
+# Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python cache and packaging
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Node / frontend build output
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+*.tsbuildinfo
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated ML artifacts and plots
+*.pkl
+*.joblib
+*.pickle
+scada_model.pkl
+scaler.pkl
+shap_explanation_*.png
+src/models/**/scada_model.pkl
+src/models/**/scaler.pkl
+src/models/**/maintenance_model.pkl
+src/models/**/anomaly_model.pkl
+src/models/**/anomaly_scaler.pkl
+src/models/**/shap_explainer.pkl
+src/models/**/target_encoder.pkl
+src/models/**/material_encoder.pkl
+src/models/**/grade_encoder.pkl
+src/models/**/feature_stats.pkl
+src/models/**/*_analysis.png
+src/models/**/*_summary.png
+src/models/**/*_confusion_matrix.png
+src/models/**/*_feature_importance.png
+src/models/**/*_shap*.png
+src/models/**/*_distribution.png
+src/models/**/*_projection.png
+
+# Temporary files
+tmp/
+temp/
+.cache/
