@@ -5,11 +5,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Ensure 'src' is on sys.path so 'backend' package imports resolve when running from repository root
+# Ensure the repository root is on sys.path so 'backend' package imports resolve when running from anywhere
 HERE = Path(__file__).resolve()
-SRC_DIR = str(HERE.parents[1])
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+PROJECT_ROOT = str(HERE.parents[1])
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.api import anomaly, fault, maintenance
 from backend.utils import model_loader
@@ -38,6 +38,7 @@ def load_models():
 
 
 @app.get("/health")
+@app.get("/api/v1/health")
 def health():
     status = model_loader.get_model_status()
     return success_response(

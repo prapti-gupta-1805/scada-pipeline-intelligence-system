@@ -32,7 +32,7 @@ print("=" * 80)
 
 # Load data
 script_dir = Path(__file__).resolve().parent
-repo_root = Path(__file__).resolve().parents[3]
+repo_root = Path(__file__).resolve().parents[2]
 data_path = repo_root / 'data' / 'scada_pipeline.csv'
 df = pd.read_csv(data_path)
 print(f"\nDataset shape: {df.shape}")
@@ -435,11 +435,10 @@ print(f"  - Scaler pickle file: scaler.pkl (to be saved)")
 
 # Save the model and scaler
 import pickle
-for artifact_dir in [script_dir, repo_root]:
-    with open(artifact_dir / 'scada_model.pkl', 'wb') as f:
-        pickle.dump(model, f)
-    with open(artifact_dir / 'scaler.pkl', 'wb') as f:
-        pickle.dump(scaler, f)
+with open(script_dir / 'scada_model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+with open(script_dir / 'scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
     
 print(f"\n✓ Model and scaler saved successfully!")
 print("\n" + "=" * 80)

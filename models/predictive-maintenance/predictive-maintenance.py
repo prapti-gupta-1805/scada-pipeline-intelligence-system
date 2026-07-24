@@ -30,7 +30,7 @@ from xgboost import XGBClassifier
 # LOAD DATA
 # ==============================================================================
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[2]
 MODEL_SAVE_PATH = Path(__file__).resolve().parent
 
 DATA_PATH = BASE_DIR / "data" / "market_pipe_thickness_loss_dataset.csv"

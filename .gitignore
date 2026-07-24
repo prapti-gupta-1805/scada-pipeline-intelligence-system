@@ -12,6 +12,8 @@ Desktop.ini
 
 # Python cache and packaging
 __pycache__/
+backend/__pycache__/
+backend/**/__pycache__/
 *.py[cod]
 *.pyd
 *.so
@@ -52,26 +54,27 @@ yarn-error.log*
 *.pkl
 *.joblib
 *.pickle
-scada_model.pkl
-scaler.pkl
 shap_explanation_*.png
-src/models/**/scada_model.pkl
-src/models/**/scaler.pkl
-src/models/**/maintenance_model.pkl
-src/models/**/anomaly_model.pkl
-src/models/**/anomaly_scaler.pkl
-src/models/**/shap_explainer.pkl
-src/models/**/target_encoder.pkl
-src/models/**/material_encoder.pkl
-src/models/**/grade_encoder.pkl
-src/models/**/feature_stats.pkl
-src/models/**/*_analysis.png
-src/models/**/*_summary.png
-src/models/**/*_confusion_matrix.png
-src/models/**/*_feature_importance.png
-src/models/**/*_shap*.png
-src/models/**/*_distribution.png
-src/models/**/*_projection.png
+models/**/scada_model.pkl
+models/**/scaler.pkl
+models/**/maintenance_model.pkl
+models/**/anomaly_model.pkl
+models/**/anomaly_scaler.pkl
+models/**/shap_explainer.pkl
+models/**/target_encoder.pkl
+models/**/material_encoder.pkl
+models/**/grade_encoder.pkl
+models/**/feature_stats.pkl
+models/**/*_analysis.png
+models/**/*_summary.png
+models/**/*_confusion_matrix.png
+models/**/*_feature_importance.png
+models/**/*_shap*.png
+models/**/*_distribution.png
+models/**/*_projection.png
+models/predictive-maintenance/confusion_matrix.png
+models/fault-classification/fault_accuracy_comparison.png
+models/anomaly-detection/anomaly_feature_correlation.png
 
 # Temporary files
 tmp/

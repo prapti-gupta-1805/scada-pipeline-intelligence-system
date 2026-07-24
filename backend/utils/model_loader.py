@@ -8,7 +8,7 @@ import importlib.util
 import sys
 from types import ModuleType
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 
 _cache: dict[str, ModuleType] = {}
 
@@ -18,17 +18,17 @@ def _load_module_from_path(module_name: str, file_path: Path) -> ModuleType:
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load module from {file_path}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
     sys.modules[module_name] = module
+    spec.loader.exec_module(module)
     return module
 
 
 def initialize_models() -> dict[str, str | None]:
     """Load each inference module exactly once and return their availability."""
     modules = {
-        "predictive_maintenance": ("maintenance", ROOT / "src" / "models" / "predictive-maintenance" / "pm-inference.py"),
-        "anomaly_detection": ("anomaly", ROOT / "src" / "models" / "anomaly-detection" / "ad-inference.py"),
-        "fault_classification": ("fault", ROOT / "src" / "models" / "fault-classification" / "fc-inference.py"),
+        "predictive_maintenance": ("maintenance", ROOT / "models" / "predictive-maintenance" / "pm-inference.py"),
+        "anomaly_detection": ("anomaly", ROOT / "models" / "anomaly-detection" / "ad-inference.py"),
+        "fault_classification": ("fault", ROOT / "models" / "fault-classification" / "fc-inference.py"),
     }
 
     availability = {}

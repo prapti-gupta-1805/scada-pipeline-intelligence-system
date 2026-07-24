@@ -64,8 +64,8 @@ try:
     with open(SHAP_EXPLAINER_PATH, "rb") as f:
         explainer = pickle.load(f)
 
-    print("✓ Predictive Maintenance model loaded successfully")
-    print(f"✓ Loaded {len(FEATURE_COLUMNS)} input features")
+    print("Predictive Maintenance model loaded successfully")
+    print(f"Loaded {len(FEATURE_COLUMNS)} input features")
 
 except FileNotFoundError as e:
 

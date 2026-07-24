@@ -59,7 +59,7 @@ try:
     with open(STATS_PATH, "rb") as f:
         feature_stats = pickle.load(f)
 
-    print("✓ Anomaly model loaded successfully")
+    print("Anomaly model loaded successfully")
 
 except FileNotFoundError as e:
 

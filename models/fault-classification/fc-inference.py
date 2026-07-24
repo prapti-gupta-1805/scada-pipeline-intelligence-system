@@ -39,7 +39,7 @@ try:
         model = pickle.load(f)
     with open(SCALER_PATH, 'rb') as f:
         scaler = pickle.load(f)
-    print("✓ Model and scaler loaded successfully")
+    print("Model and scaler loaded successfully")
 except FileNotFoundError as e:
     # Raise error instead of exiting so module can be imported by backend
     raise RuntimeError(f"Model or scaler file not found: {e}")
@@ -112,7 +112,7 @@ def predict(sample_dict, explain=True):
             shap_values_top = sample_shap[top_indices]
 
             # Save SHAP plot
-            plot_path = f"shap_explanation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            plot_path = BASE_DIR / f"shap_explanation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
             fig, ax = plt.subplots(figsize=(8, 5))
             ax.barh(range(len(top_features)), shap_values_top[::-1], color='tab:blue')
             ax.set_yticks(range(len(top_features)))
@@ -125,7 +125,7 @@ def predict(sample_dict, explain=True):
             plt.close(fig)
 
             result['shap_explanation'] = {
-                'plot_path': plot_path,
+                'plot_path': str(plot_path),
                 'top_features': [
                     {
                         'feature': FEATURE_COLS[idx],
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     print("This module exposes the inference functions:")
     print("  - predict(sample_dict)")
     print("  - predict_batch(df)")
-    print("Run `src/models/inference_demo.py` for example usage and SHAP plot generation.")
+    print("Run `models/inference_demo.py` for example usage and SHAP plot generation.")
     print("-" * 80)
     
     normal_sample = {

@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 # LOAD DATA
 # ==============================================================================
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_PATH = BASE_DIR / "data" / "scada_pipeline.csv"
 
 df = pd.read_csv(DATA_PATH)

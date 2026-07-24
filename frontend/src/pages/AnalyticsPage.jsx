@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { BarChart3, Sparkles } from 'lucide-react';
-import faultConfusion from '../../../src/models/fault-classification/fault_confusion_matrix.png';
-import faultImportance from '../../../src/models/fault-classification/fault_feature_importance.png';
-import faultDistribution from '../../../src/models/fault-classification/fault_class_distribution.png';
-import anomalyDistribution from '../../../src/models/anomaly-detection/anomaly_score_distribution.png';
-import anomalyPca from '../../../src/models/anomaly-detection/anomaly_pca_projection.png';
-import maintenanceImportance from '../../../src/models/predictive-maintenance/maintenance_feature_importance.png';
-import maintenanceShap from '../../../src/models/predictive-maintenance/maintenance_shap_feature_importance.png';
-import maintenanceSummary from '../../../src/models/predictive-maintenance/maintenance_model_summary.png';
+
+const faultConfusion = '/models/fault-classification/fault_confusion_matrix.png';
+const faultImportance = '/models/fault-classification/fault_feature_importance.png';
+const faultDistribution = '/models/fault-classification/fault_class_distribution.png';
+const anomalyDistribution = '/models/anomaly-detection/anomaly_score_distribution.png';
+const anomalyPca = '/models/anomaly-detection/anomaly_pca_projection.png';
+const maintenanceImportance = '/models/predictive-maintenance/maintenance_feature_importance.png';
+const maintenanceShap = '/models/predictive-maintenance/maintenance_shap_feature_importance.png';
+const maintenanceSummary = '/models/predictive-maintenance/maintenance_model_summary.png';
 
 const analyticsCards = [
   {
