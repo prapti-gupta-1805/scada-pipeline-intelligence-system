@@ -32,7 +32,8 @@ print("=" * 80)
 
 # Load data
 script_dir = Path(__file__).resolve().parent
-data_path = script_dir.parent.parent / 'data' / 'scada_pipeline.csv'
+repo_root = Path(__file__).resolve().parents[3]
+data_path = repo_root / 'data' / 'scada_pipeline.csv'
 df = pd.read_csv(data_path)
 print(f"\nDataset shape: {df.shape}")
 print(f"\nFirst few rows:")
@@ -101,28 +102,52 @@ print(f"\nFeature statistics:")
 print(X.describe())
 
 # ============================================================================
-# 4. TRAIN-TEST SPLIT
+# 4. TRAIN / VALIDATION / TEST SPLIT
 # ============================================================================
 
 print("\n" + "=" * 80)
 print("TRAIN-TEST SPLIT")
 print("=" * 80)
 
-X_train, X_test, y_train, y_test = train_test_split(
+X_train_raw, X_test_raw, y_train_raw, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-print(f"\nTraining set size: {X_train.shape[0]}")
-print(f"Test set size: {X_test.shape[0]}")
+X_train_raw, X_val_raw, y_train, y_val = train_test_split(
+    X_train_raw,
+    y_train_raw,
+    test_size=0.2,
+    random_state=42,
+    stratify=y_train_raw,
+)
+
+print(f"\nTraining set size: {X_train_raw.shape[0]}")
+print(f"Validation set size: {X_val_raw.shape[0]}")
+print(f"Test set size: {X_test_raw.shape[0]}")
 print(f"\nClass distribution in training set:")
 print(y_train.value_counts().sort_index())
+print(f"\nClass distribution in validation set:")
+print(y_val.value_counts().sort_index())
 print(f"\nClass distribution in test set:")
 print(y_test.value_counts().sort_index())
 
 # Scale numerical features
 scaler = StandardScaler()
-X_train = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns, index=X_train.index)
-X_test = pd.DataFrame(scaler.transform(X_test), columns=X_test.columns, index=X_test.index)
+X_train = pd.DataFrame(
+    scaler.fit_transform(X_train_raw),
+    columns=X_train_raw.columns,
+    index=X_train_raw.index,
+)
+X_val = pd.DataFrame(
+    scaler.transform(X_val_raw),
+    columns=X_val_raw.columns,
+    index=X_val_raw.index,
+)
+X_test = pd.DataFrame(
+    scaler.transform(X_test_raw),
+    columns=X_test_raw.columns,
+    index=X_test_raw.index,
+)
 
 # ============================================================================
 # 5. XGBOOST MODEL TRAINING
@@ -155,8 +180,7 @@ for param, value in xgb_params.items():
 
 # Train model
 model = xgb.XGBClassifier(**xgb_params)
-model.fit(X_train, y_train, eval_set=[(X_test, y_test)], 
-          verbose=False)
+model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
 
 print(f"\nModel training completed!")
 
@@ -170,16 +194,34 @@ print("=" * 80)
 
 # Predictions
 y_pred_train = model.predict(X_train)
+y_pred_val = model.predict(X_val)
 y_pred_test = model.predict(X_test)
 y_pred_proba_test = model.predict_proba(X_test)
 
 # Accuracy
 train_accuracy = accuracy_score(y_train, y_pred_train)
+val_accuracy = accuracy_score(y_val, y_pred_val)
 test_accuracy = accuracy_score(y_test, y_pred_test)
 
+train_precision, train_recall, train_f1, _ = precision_recall_fscore_support(
+    y_train, y_pred_train, average='macro', zero_division=0
+)
+val_precision, val_recall, val_f1, _ = precision_recall_fscore_support(
+    y_val, y_pred_val, average='macro', zero_division=0
+)
+test_precision, test_recall, test_f1, _ = precision_recall_fscore_support(
+    y_test, y_pred_test, average='macro', zero_division=0
+)
+
 print(f"\nAccuracy:")
-print(f"  Training Set: {train_accuracy:.4f}")
-print(f"  Test Set: {test_accuracy:.4f}")
+print(f"  Training Set:   {train_accuracy:.4f}")
+print(f"  Validation Set: {val_accuracy:.4f}")
+print(f"  Test Set:       {test_accuracy:.4f}")
+
+print(f"\nMacro Metrics:")
+print(f"  Training Set -> Precision: {train_precision:.4f}, Recall: {train_recall:.4f}, F1: {train_f1:.4f}")
+print(f"  Validation Set -> Precision: {val_precision:.4f}, Recall: {val_recall:.4f}, F1: {val_f1:.4f}")
+print(f"  Test Set -> Precision: {test_precision:.4f}, Recall: {test_recall:.4f}, F1: {test_f1:.4f}")
 
 # Detailed classification report
 print(f"\nClassification Report (Test Set):")
@@ -190,6 +232,32 @@ print(classification_report(y_test, y_pred_test, target_names=class_names, digit
 cm = confusion_matrix(y_test, y_pred_test)
 print(f"\nConfusion Matrix:")
 print(cm)
+
+# Compare the dominant proxy feature without changing the default model
+if "alarm_triggered" in feature_cols:
+    reduced_feature_cols = [feature for feature in feature_cols if feature != "alarm_triggered"]
+    reduced_train_raw = X_train_raw[reduced_feature_cols]
+    reduced_val_raw = X_val_raw[reduced_feature_cols]
+    reduced_test_raw = X_test_raw[reduced_feature_cols]
+
+    reduced_scaler = StandardScaler()
+    reduced_train = reduced_scaler.fit_transform(reduced_train_raw)
+    reduced_val = reduced_scaler.transform(reduced_val_raw)
+    reduced_test = reduced_scaler.transform(reduced_test_raw)
+
+    reduced_model = xgb.XGBClassifier(**xgb_params)
+    reduced_model.fit(reduced_train, y_train, eval_set=[(reduced_val, y_val)], verbose=False)
+    reduced_pred = reduced_model.predict(reduced_test)
+    reduced_accuracy = accuracy_score(y_test, reduced_pred)
+    reduced_precision, reduced_recall, reduced_f1, _ = precision_recall_fscore_support(
+        y_test, reduced_pred, average='macro', zero_division=0
+    )
+
+    print("\nReduced Feature Comparison (without alarm_triggered):")
+    print(f"  Test Accuracy:  {reduced_accuracy:.4f}")
+    print(f"  Test Precision: {reduced_precision:.4f}")
+    print(f"  Test Recall:    {reduced_recall:.4f}")
+    print(f"  Test F1:        {reduced_f1:.4f}")
 
 # ============================================================================
 # 7. FEATURE IMPORTANCE (XGBoost)
@@ -231,87 +299,73 @@ print("\n" + "=" * 80)
 print("GENERATING VISUALIZATIONS")
 print("=" * 80)
 
-fig = plt.figure(figsize=(20, 28))
+output_dir = script_dir
 
-# 1. Confusion Matrix Heatmap
-ax1 = plt.subplot(5, 2, 1)
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=class_names, yticklabels=class_names, ax=ax1)
-ax1.set_title('Confusion Matrix - Test Set', fontsize=14, fontweight='bold')
-ax1.set_ylabel('True Label')
-ax1.set_xlabel('Predicted Label')
+
+def save_figure(fig, filename):
+    fig.tight_layout()
+    fig.savefig(output_dir / filename, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+# 1. Confusion Matrix
+fig, ax = plt.subplots(figsize=(7, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=class_names, yticklabels=class_names, ax=ax)
+ax.set_title('Confusion Matrix - Test Set', fontsize=14, fontweight='bold')
+ax.set_ylabel('True Label')
+ax.set_xlabel('Predicted Label')
+save_figure(fig, 'fault_confusion_matrix.png')
+print("\nSaved: fault_confusion_matrix.png")
 
 # 2. Feature Importance
-ax2 = plt.subplot(5, 2, 2)
+fig, ax = plt.subplots(figsize=(8, 6))
 top_features = feature_importance.head(10)
-bars = ax2.barh(range(len(top_features)), top_features['importance'].values, color='steelblue')
-ax2.set_yticks(range(len(top_features)))
-ax2.set_yticklabels(top_features['feature'].values)
-ax2.set_xlabel('Importance Score')
-ax2.set_title('Top 10 Feature Importance (XGBoost)', fontsize=14, fontweight='bold')
-ax2.invert_yaxis()
-for i, bar in enumerate(bars):
-    width = bar.get_width()
-    ax2.text(width, bar.get_y() + bar.get_height()/2, 
-             f'{width:.4f}', ha='left', va='center', fontsize=9)
+sns.barplot(data=top_features, x='importance', y='feature', ax=ax, palette='Blues_r')
+ax.set_xlabel('Importance Score')
+ax.set_title('Top 10 Feature Importance (XGBoost)', fontsize=14, fontweight='bold')
+ax.invert_yaxis()
+save_figure(fig, 'fault_feature_importance.png')
+print("Saved: fault_feature_importance.png")
 
 # 3. Class Distribution
-ax3 = plt.subplot(5, 2, 3)
+fig, ax = plt.subplots(figsize=(7, 5))
 class_dist = y.value_counts().sort_index()
-bars = ax3.bar(class_names, [class_dist[i] for i in range(n_classes)], 
-               color=['#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#e67e22'])
-ax3.set_ylabel('Count')
-ax3.set_title('Class Distribution', fontsize=14, fontweight='bold')
-ax3.grid(axis='y', alpha=0.3)
+bars = ax.bar(class_names, [class_dist[i] for i in range(n_classes)],
+              color=['#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#e67e22'])
+ax.set_ylabel('Count')
+ax.set_title('Class Distribution', fontsize=14, fontweight='bold')
+ax.grid(axis='y', alpha=0.3)
 for bar in bars:
     height = bar.get_height()
-    ax3.text(bar.get_x() + bar.get_width()/2., height,
-             f'{int(height)}', ha='center', va='bottom')
+    ax.text(bar.get_x() + bar.get_width()/2., height,
+            f'{int(height)}', ha='center', va='bottom')
+save_figure(fig, 'fault_class_distribution.png')
+print("Saved: fault_class_distribution.png")
 
 # 4. Accuracy Comparison
-ax4 = plt.subplot(5, 2, 4)
-datasets = ['Training', 'Test']
-accuracies = [train_accuracy, test_accuracy]
-bars = ax4.bar(datasets, accuracies, color=['#3498db', '#e74c3c'])
-ax4.set_ylabel('Accuracy')
-ax4.set_ylim([0, 1])
-ax4.set_title('Model Accuracy', fontsize=14, fontweight='bold')
-ax4.grid(axis='y', alpha=0.3)
+fig, ax = plt.subplots(figsize=(6, 4))
+datasets = ['Training', 'Validation', 'Test']
+accuracies = [train_accuracy, val_accuracy, test_accuracy]
+bars = ax.bar(datasets, accuracies, color=['#3498db', '#f39c12', '#e74c3c'])
+ax.set_ylabel('Accuracy')
+ax.set_ylim([0, 1])
+ax.set_title('Model Accuracy', fontsize=14, fontweight='bold')
+ax.grid(axis='y', alpha=0.3)
 for bar, acc in zip(bars, accuracies):
     height = bar.get_height()
-    ax4.text(bar.get_x() + bar.get_width()/2., height,
-             f'{acc:.4f}', ha='center', va='bottom')
+    ax.text(bar.get_x() + bar.get_width()/2., height,
+            f'{acc:.4f}', ha='center', va='bottom')
+save_figure(fig, 'fault_accuracy_comparison.png')
+print("Saved: fault_accuracy_comparison.png")
 
-# 5-8. SHAP Summary Plots for each class (or combined)
-for idx in range(n_classes):
-    ax = plt.subplot(5, 2, 5 + idx)
-    if isinstance(shap_values, list):
-        class_shap = shap_values[idx]
-    else:
-        class_shap = shap_values[:, :, idx] if shap_values.ndim == 3 else shap_values
-    
-    # Get mean absolute SHAP values
-    mean_shap = np.abs(class_shap).mean(axis=0)
-    
-    # Create dataframe for plotting
-    shap_importance = pd.DataFrame({
-        'feature': feature_cols,
-        'mean_shap': mean_shap
-    }).sort_values('mean_shap', ascending=False).head(10)
-    
-    bars = ax.barh(range(len(shap_importance)), shap_importance['mean_shap'].values, 
-                    color=plt.cm.Set3(idx))
-    ax.set_yticks(range(len(shap_importance)))
-    ax.set_yticklabels(shap_importance['feature'].values)
-    ax.set_xlabel('Mean |SHAP value|')
-    ax.set_title(f'SHAP Feature Importance - {class_names[idx]}', 
-                 fontsize=12, fontweight='bold')
-    ax.invert_yaxis()
-
-plt.tight_layout()
-plt.savefig('scada_model_analysis.png', dpi=300, bbox_inches='tight')
-print("\nSaved: scada_model_analysis.png")
-plt.close()
+# 5. SHAP Summary
+fig = plt.figure(figsize=(10, 6))
+if isinstance(shap_values, list):
+    shap.summary_plot(shap_values, X_test, show=False)
+else:
+    shap.summary_plot(shap_values, X_test, show=False)
+save_figure(fig, 'fault_shap_summary.png')
+print("Saved: fault_shap_summary.png")
 
 # ============================================================================
 # 10. SAMPLE PREDICTIONS WITH SHAP EXPLANATION
@@ -381,10 +435,11 @@ print(f"  - Scaler pickle file: scaler.pkl (to be saved)")
 
 # Save the model and scaler
 import pickle
-with open('scada_model.pkl', 'wb') as f:
-    pickle.dump(model, f)
-with open('scaler.pkl', 'wb') as f:
-    pickle.dump(scaler, f)
+for artifact_dir in [script_dir, repo_root]:
+    with open(artifact_dir / 'scada_model.pkl', 'wb') as f:
+        pickle.dump(model, f)
+    with open(artifact_dir / 'scaler.pkl', 'wb') as f:
+        pickle.dump(scaler, f)
     
 print(f"\n✓ Model and scaler saved successfully!")
 print("\n" + "=" * 80)

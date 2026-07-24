@@ -16,8 +16,12 @@ warnings.filterwarnings('ignore')
 # CONFIGURATION
 # ============================================================================
 
-MODEL_PATH = 'scada_model.pkl'
-SCALER_PATH = 'scaler.pkl'
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+MODEL_PATH = BASE_DIR / 'scada_model.pkl'
+SCALER_PATH = BASE_DIR / 'scaler.pkl'
 
 FEATURE_COLS = ['segment_id', 'pressure', 'flow_rate', 'temperature', 
                 'valve_status', 'pump_state', 'pump_speed', 'compressor_state',
@@ -31,13 +35,14 @@ CLASS_NAMES = ['Normal', 'Leak', 'Blockage', 'Surge', 'Degradation']
 
 print("Loading model and scaler...")
 try:
-    model = pickle.load(open(MODEL_PATH, 'rb'))
-    scaler = pickle.load(open(SCALER_PATH, 'rb'))
+    with open(MODEL_PATH, 'rb') as f:
+        model = pickle.load(f)
+    with open(SCALER_PATH, 'rb') as f:
+        scaler = pickle.load(f)
     print("✓ Model and scaler loaded successfully")
 except FileNotFoundError as e:
-    print(f"✗ Error: {e}")
-    print("  Please ensure both scada_model.pkl and scaler.pkl are in the current directory")
-    exit(1)
+    # Raise error instead of exiting so module can be imported by backend
+    raise RuntimeError(f"Model or scaler file not found: {e}")
 
 # ============================================================================
 # FUNCTION: PREDICT ON SINGLE SAMPLE
