@@ -5,31 +5,20 @@ import PredictionCard from '../components/PredictionCard';
 import { predictMaintenance } from '../lib/api';
 
 const defaultValues = {
-  Pipe_Size_mm: 914,
-  Thickness_mm: 14.2,
-  Material: 'Carbon Steel',
-  Grade: 'API 5L X42',
-  Max_Pressure_psi: 1450,
-  Temperature_C: 56,
-  Corrosion_Impact_Percent: 3.2,
-  Thickness_Loss_mm: 0.8,
-  Material_Loss_Percent: 1.5,
-  Time_Years: 12,
-  explain: true,
+  Pipe_Size_mm: '',
+  Thickness_mm: '',
+  Material: '',
+  Grade: '',
+  Max_Pressure_psi: '',
+  Temperature_C: '',
+  Corrosion_Impact_Percent: '',
+  Thickness_Loss_mm: '',
+  Material_Loss_Percent: '',
+  Time_Years: '',
+  explain: false,
 };
 
-const fields = [
-  { key: 'Pipe_Size_mm', label: 'Pipe Size (mm)', type: 'number', step: '0.1' },
-  { key: 'Thickness_mm', label: 'Thickness (mm)', type: 'number', step: '0.1' },
-  { key: 'Material', label: 'Material', type: 'text' },
-  { key: 'Grade', label: 'Grade', type: 'text' },
-  { key: 'Max_Pressure_psi', label: 'Max Pressure (psi)', type: 'number', step: '0.1' },
-  { key: 'Temperature_C', label: 'Temperature (C)', type: 'number', step: '0.1' },
-  { key: 'Corrosion_Impact_Percent', label: 'Corrosion Impact (%)', type: 'number', step: '0.1' },
-  { key: 'Thickness_Loss_mm', label: 'Thickness Loss (mm)', type: 'number', step: '0.1' },
-  { key: 'Material_Loss_Percent', label: 'Material Loss (%)', type: 'number', step: '0.1' },
-  { key: 'Time_Years', label: 'Time (Years)', type: 'number', step: '0.1' },
-];
+import { maintenanceFields as fields } from '../data/system';
 
 export default function MaintenancePage() {
   const [form, setForm] = useState(defaultValues);
@@ -83,13 +72,28 @@ export default function MaintenancePage() {
           {fields.map((field) => (
             <label key={field.key} className="block text-sm text-slate-300">
               <span className="mb-1.5 block font-medium text-slate-400">{field.label}</span>
-              <input
-                type={field.type}
-                step={field.step}
-                value={form[field.key]}
-                onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
-              />
+              {field.type === 'select' ? (
+                <select
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
+                >
+                  <option value="">Select {field.label}</option>
+                  {field.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type}
+                  step={field.step}
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
+                />
+              )}
             </label>
           ))}
         </div>

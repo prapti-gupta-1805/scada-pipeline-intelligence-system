@@ -5,37 +5,23 @@ import PredictionCard from '../components/PredictionCard';
 import { predictAnomaly } from '../lib/api';
 
 const defaultValues = {
-  segment_id: 18,
-  pressure: 71.2,
-  flow_rate: 4.8,
-  temperature: 32.4,
-  valve_status: 1,
-  pump_state: 1,
-  pump_speed: 1360,
-  compressor_state: 1,
-  energy_consumption: 34.2,
-  alarm_triggered: 0,
-  hour: 16,
-  day_of_week: 4,
-  day_of_month: 18,
-  explain: true,
+  segment_id: '',
+  pressure: '',
+  flow_rate: '',
+  temperature: '',
+  valve_status: '',
+  pump_state: '',
+  pump_speed: '',
+  compressor_state: '',
+  energy_consumption: '',
+  alarm_triggered: '',
+  hour: '',
+  day_of_week: '',
+  day_of_month: '',
+  explain: false,
 };
 
-const fields = [
-  { key: 'segment_id', label: 'Segment ID', type: 'number' },
-  { key: 'pressure', label: 'Pressure', type: 'number', step: '0.1' },
-  { key: 'flow_rate', label: 'Flow Rate', type: 'number', step: '0.1' },
-  { key: 'temperature', label: 'Temperature', type: 'number', step: '0.1' },
-  { key: 'valve_status', label: 'Valve Status', type: 'number' },
-  { key: 'pump_state', label: 'Pump State', type: 'number' },
-  { key: 'pump_speed', label: 'Pump Speed', type: 'number' },
-  { key: 'compressor_state', label: 'Compressor State', type: 'number' },
-  { key: 'energy_consumption', label: 'Energy Consumption', type: 'number', step: '0.1' },
-  { key: 'alarm_triggered', label: 'Alarm Triggered', type: 'number' },
-  { key: 'hour', label: 'Hour', type: 'number' },
-  { key: 'day_of_week', label: 'Day of Week', type: 'number' },
-  { key: 'day_of_month', label: 'Day of Month', type: 'number' },
-];
+import { anomalyFields as fields } from '../data/system';
 
 export default function AnomalyPage() {
   const [form, setForm] = useState(defaultValues);
@@ -94,13 +80,28 @@ export default function AnomalyPage() {
           {fields.map((field) => (
             <label key={field.key} className="block text-sm text-slate-300">
               <span className="mb-1.5 block font-medium text-slate-400">{field.label}</span>
-              <input
-                type={field.type}
-                step={field.step}
-                value={form[field.key]}
-                onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
-              />
+              {field.type === 'select' ? (
+                <select
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
+                >
+                  <option value="">Select {field.label}</option>
+                  {field.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type}
+                  step={field.step}
+                  value={form[field.key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5 text-sm text-white outline-none ring-0 transition focus:border-cyan-500"
+                />
+              )}
             </label>
           ))}
         </div>

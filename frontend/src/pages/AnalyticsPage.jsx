@@ -10,12 +10,13 @@ const maintenanceImportance = '/models/predictive-maintenance/maintenance_featur
 const maintenanceShap = '/models/predictive-maintenance/maintenance_shap_feature_importance.png';
 const maintenanceSummary = '/models/predictive-maintenance/maintenance_model_summary.png';
 
+// TODO: Expected backend endpoint for dynamic analytics insights: /api/v1/analytics/insights
+
 const analyticsCards = [
   {
     title: 'Fault confusion matrix',
     subtitle: 'Model accuracy and class behavior',
     description: 'Confusion matrix for the fault classifier rendered from the repository assets.',
-    insight: 'The classifier is separating normal and fault states with strong confidence across the test distribution.',
     image: faultConfusion,
     accent: 'from-cyan-500/15 to-slate-900',
   },
@@ -23,7 +24,6 @@ const analyticsCards = [
     title: 'Fault feature importance',
     subtitle: 'Explainable feature attribution',
     description: 'Feature importance ranking for the fault model.',
-    insight: 'The most influential factors point to pressure, energy, and pump conditions driving the fault decision.',
     image: faultImportance,
     accent: 'from-violet-500/15 to-slate-900',
   },
@@ -31,7 +31,6 @@ const analyticsCards = [
     title: 'Fault class distribution',
     subtitle: 'Class balance for the training set',
     description: 'Distribution of fault classes across the dataset.',
-    insight: 'The class mix shows where the model sees the strongest coverage and where the data is thinner.',
     image: faultDistribution,
     accent: 'from-emerald-500/15 to-slate-900',
   },
@@ -39,7 +38,6 @@ const analyticsCards = [
     title: 'Anomaly score distribution',
     subtitle: 'Deviation profile for unusual telemetry',
     description: 'Histogram of anomaly scores from the isolation forest model.',
-    insight: 'The model highlights segments with unusual operational drift that merit manual review.',
     image: anomalyDistribution,
     accent: 'from-amber-500/15 to-slate-900',
   },
@@ -47,7 +45,6 @@ const analyticsCards = [
     title: 'Anomaly PCA projection',
     subtitle: 'Low-dimensional structure view',
     description: 'PCA projection of the anomaly detector inputs.',
-    insight: 'The projection shows how normal and anomalous states separate in the latent feature space.',
     image: anomalyPca,
     accent: 'from-rose-500/15 to-slate-900',
   },
@@ -55,7 +52,6 @@ const analyticsCards = [
     title: 'Maintenance feature importance',
     subtitle: 'Top factors influencing intervention risk',
     description: 'Feature contribution summary for maintenance action planning.',
-    insight: 'Thickness loss and material degradation appear as the primary drivers behind intervention severity.',
     image: maintenanceImportance,
     accent: 'from-sky-500/15 to-slate-900',
   },
@@ -63,7 +59,6 @@ const analyticsCards = [
     title: 'Maintenance SHAP summary',
     subtitle: 'Explainability for intervention planning',
     description: 'SHAP summary plot for the maintenance model.',
-    insight: 'The SHAP outlook helps point to the combination of features that most strongly influence risk.',
     image: maintenanceShap,
     accent: 'from-indigo-500/15 to-slate-900',
   },
@@ -71,7 +66,6 @@ const analyticsCards = [
     title: 'Maintenance model summary',
     subtitle: 'Model health snapshot',
     description: 'Concise summary of the predictive maintenance model outputs.',
-    insight: 'The model summary reinforces the relationship between observed performance and intervention readiness.',
     image: maintenanceSummary,
     accent: 'from-fuchsia-500/15 to-slate-900',
   },
@@ -114,9 +108,11 @@ export default function AnalyticsPage() {
                   <BarChart3 className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-4 rounded-2xl border border-slate-800/80 bg-slate-950/70 p-3 text-sm text-slate-300">
-                <span className="font-medium text-slate-100">Inference:</span> {card.insight}
-              </div>
+              {card.insight && (
+                <div className="mt-4 rounded-2xl border border-slate-800/80 bg-slate-950/70 p-3 text-sm text-slate-300">
+                  <span className="font-medium text-slate-100">Inference:</span> {card.insight}
+                </div>
+              )}
             </div>
             <div className="p-4">
               <img src={card.image} alt={card.title} className="h-80 w-full rounded-2xl border border-slate-800 object-contain bg-slate-950/70" />
