@@ -8,7 +8,6 @@ const anomalyDistribution = '/models/anomaly-detection/anomaly_score_distributio
 const anomalyPca = '/models/anomaly-detection/anomaly_pca_projection.png';
 const maintenanceImportance = '/models/predictive-maintenance/maintenance_feature_importance.png';
 const maintenanceShap = '/models/predictive-maintenance/maintenance_shap_feature_importance.png';
-const maintenanceSummary = '/models/predictive-maintenance/maintenance_model_summary.png';
 
 // TODO: Expected backend endpoint for dynamic analytics insights: /api/v1/analytics/insights
 
@@ -61,13 +60,6 @@ const analyticsCards = [
     description: 'SHAP summary plot for the maintenance model.',
     image: maintenanceShap,
     accent: 'from-indigo-500/15 to-slate-900',
-  },
-  {
-    title: 'Maintenance model summary',
-    subtitle: 'Model health snapshot',
-    description: 'Concise summary of the predictive maintenance model outputs.',
-    image: maintenanceSummary,
-    accent: 'from-fuchsia-500/15 to-slate-900',
   },
 ];
 

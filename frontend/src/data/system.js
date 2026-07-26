@@ -10,7 +10,6 @@ export const navItems = [
   { to: '/fault-classification', label: 'Fault Classification', icon: AlertTriangle, description: 'Classify failure modes' },
   { to: '/predictive-maintenance', label: 'Predictive Maintenance', icon: Cpu, description: 'Forecast intervention risk' },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, description: 'Model performance evidence' },
-  { to: '/about', label: 'About', icon: Sparkles, description: 'Architecture and stack' },
 ];
 
 export const routeTitles = {
@@ -23,11 +22,9 @@ export const routeTitles = {
   '/predictive-maintenance': 'Predictive Maintenance',
   '/maintenance': 'Predictive Maintenance',
   '/analytics': 'Analytics',
-  '/about': 'About System',
 };
 
 const sharedTelemetryFields = [
-  { key: 'segment_id', label: 'Segment ID', type: 'number', step: '1' },
   { key: 'pressure', label: 'Pressure', type: 'number', step: '0.1' },
   { key: 'flow_rate', label: 'Flow Rate', type: 'number', step: '0.1' },
   { key: 'temperature', label: 'Temperature', type: 'number', step: '0.1' },
@@ -60,15 +57,6 @@ const sharedTelemetryFields = [
     ],
   },
   { key: 'energy_consumption', label: 'Energy Consumption', type: 'number', step: '0.1' },
-  {
-    key: 'alarm_triggered',
-    label: 'Alarm Triggered',
-    type: 'select',
-    options: [
-      { label: 'No', value: 0 },
-      { label: 'Yes', value: 1 },
-    ],
-  },
   { key: 'hour', label: 'Hour', type: 'number', step: '1' },
   { key: 'day_of_week', label: 'Day of Week', type: 'number', step: '1' },
   { key: 'day_of_month', label: 'Day of Month', type: 'number', step: '1' },

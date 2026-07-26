@@ -15,8 +15,12 @@ from sklearn.metrics import (classification_report, confusion_matrix, accuracy_s
 import xgboost as xgb
 import shap
 from pathlib import Path
+import sys
 import warnings
 warnings.filterwarnings('ignore')
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # Set style for better visualizations
 sns.set_style("whitegrid")
@@ -53,7 +57,8 @@ print("=" * 80)
 print(f"\nTarget variable distribution:")
 print(df['target'].value_counts())
 print(f"\nEvent type distribution:")
-print(df['event_type'].value_counts())
+event_labels = df['event_type'].copy()
+print(event_labels.value_counts())
 
 # Create a mapping from event_type to class labels
 event_to_class = {
@@ -65,8 +70,8 @@ event_to_class = {
 }
 
 # Use event_type as the primary target (more descriptive)
-df['class_label'] = df['event_type'].map(event_to_class)
-df['class_name'] = df['event_type']
+df['class_label'] = event_labels.map(event_to_class)
+df['class_name'] = event_labels
 
 print(f"\nClass distribution:")
 for class_name, class_idx in event_to_class.items():
@@ -88,13 +93,15 @@ df['hour'] = df['timestamp'].dt.hour
 df['day_of_week'] = df['timestamp'].dt.dayofweek
 df['day_of_month'] = df['timestamp'].dt.day
 
-# Select features for the model (exclude identifiers and target)
-feature_cols = ['segment_id', 'pressure', 'flow_rate', 'temperature', 
+# Select features for the model after removing the excluded telemetry fields
+feature_cols = ['pressure', 'flow_rate', 'temperature',
                 'valve_status', 'pump_state', 'pump_speed', 'compressor_state',
-                'energy_consumption', 'alarm_triggered', 'hour', 'day_of_week', 'day_of_month']
+                'energy_consumption', 'hour', 'day_of_week', 'day_of_month']
 
 X = df[feature_cols].copy()
 y = df['class_label'].copy()
+
+df = df.drop(columns=['timestamp', 'segment_id', 'alarm_triggered', 'event_type'], errors='ignore')
 
 print(f"\nFeatures selected: {len(feature_cols)}")
 print(f"Features: {feature_cols}")
@@ -232,32 +239,6 @@ print(classification_report(y_test, y_pred_test, target_names=class_names, digit
 cm = confusion_matrix(y_test, y_pred_test)
 print(f"\nConfusion Matrix:")
 print(cm)
-
-# Compare the dominant proxy feature without changing the default model
-if "alarm_triggered" in feature_cols:
-    reduced_feature_cols = [feature for feature in feature_cols if feature != "alarm_triggered"]
-    reduced_train_raw = X_train_raw[reduced_feature_cols]
-    reduced_val_raw = X_val_raw[reduced_feature_cols]
-    reduced_test_raw = X_test_raw[reduced_feature_cols]
-
-    reduced_scaler = StandardScaler()
-    reduced_train = reduced_scaler.fit_transform(reduced_train_raw)
-    reduced_val = reduced_scaler.transform(reduced_val_raw)
-    reduced_test = reduced_scaler.transform(reduced_test_raw)
-
-    reduced_model = xgb.XGBClassifier(**xgb_params)
-    reduced_model.fit(reduced_train, y_train, eval_set=[(reduced_val, y_val)], verbose=False)
-    reduced_pred = reduced_model.predict(reduced_test)
-    reduced_accuracy = accuracy_score(y_test, reduced_pred)
-    reduced_precision, reduced_recall, reduced_f1, _ = precision_recall_fscore_support(
-        y_test, reduced_pred, average='macro', zero_division=0
-    )
-
-    print("\nReduced Feature Comparison (without alarm_triggered):")
-    print(f"  Test Accuracy:  {reduced_accuracy:.4f}")
-    print(f"  Test Precision: {reduced_precision:.4f}")
-    print(f"  Test Recall:    {reduced_recall:.4f}")
-    print(f"  Test F1:        {reduced_f1:.4f}")
 
 # ============================================================================
 # 7. FEATURE IMPORTANCE (XGBoost)

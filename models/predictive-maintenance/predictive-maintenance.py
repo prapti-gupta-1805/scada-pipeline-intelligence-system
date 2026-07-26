@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 
 import pickle
 from pathlib import Path
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +26,9 @@ from sklearn.metrics import (
 from sklearn.preprocessing import LabelEncoder
 
 from xgboost import XGBClassifier
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ==============================================================================
 # LOAD DATA

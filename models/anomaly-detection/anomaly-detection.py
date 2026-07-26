@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 
 import pickle
 from pathlib import Path
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +20,9 @@ from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ==============================================================================
 # LOAD DATA
@@ -36,7 +40,7 @@ print("=" * 80)
 print(df.shape)
 print(df.head())
 
-true_labels = df["event_type"]
+true_labels = df["event_type"].copy()
 
 print(true_labels.value_counts())
 
@@ -45,13 +49,11 @@ print(true_labels.value_counts())
 # ==============================================================================
 
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-
 df["hour"] = df["timestamp"].dt.hour
 df["day_of_week"] = df["timestamp"].dt.dayofweek
 df["day_of_month"] = df["timestamp"].dt.day
 
-FEATURES = [
-    "segment_id",
+MODEL_FEATURES = [
     "pressure",
     "flow_rate",
     "temperature",
@@ -60,14 +62,12 @@ FEATURES = [
     "pump_speed",
     "compressor_state",
     "energy_consumption",
-    "alarm_triggered",
-    "hour",
-    "day_of_week",
-    "day_of_month",
 ]
 
-X_raw = df[FEATURES].copy()
-y_raw = (df["event_type"] != "normal").astype(int)
+X_raw = df[MODEL_FEATURES].copy()
+y_raw = (true_labels != "normal").astype(int)
+
+df = df.drop(columns=["timestamp", "segment_id", "alarm_triggered", "event_type"], errors="ignore")
 
 # ==============================================================================
 # TRAIN / VALIDATION / TEST SPLIT
@@ -111,41 +111,75 @@ def evaluate_predictions(y_true, y_pred):
     return accuracy, precision, recall, f1
 
 
-contamination_values = [0.03, 0.05, 0.08, 0.10, 0.15, 0.20]
+def tune_threshold(y_true, anomaly_scores):
+    best = None
+    for threshold in np.unique(anomaly_scores):
+        predictions = (anomaly_scores >= threshold).astype(int)
+        accuracy, precision, recall, f1 = evaluate_predictions(y_true, predictions)
+        candidate = (f1, precision, recall, accuracy, threshold)
+        if best is None or candidate > best:
+            best = candidate
+    return best
+
+
+contamination_values = [0.03, 0.05, 0.08, 0.10, 0.12, 0.15, 0.20]
 validation_results = []
 test_results = []
+parameter_grid = [
+    {"n_estimators": 200, "max_samples": "auto", "max_features": 1.0, "bootstrap": False},
+    {"n_estimators": 300, "max_samples": 0.8, "max_features": 1.0, "bootstrap": False},
+    {"n_estimators": 300, "max_samples": 0.8, "max_features": 0.8, "bootstrap": False},
+]
 
-for contamination in contamination_values:
-    sweep_model = IsolationForest(
-        n_estimators=200,
-        contamination=contamination,
-        random_state=42,
-    )
-    sweep_model.fit(X_train)
-    val_pred = np.where(sweep_model.predict(X_val) == -1, 1, 0)
-    test_pred_sweep = np.where(sweep_model.predict(X_test) == -1, 1, 0)
-    accuracy, precision, recall, f1 = evaluate_predictions(y_val, val_pred)
-    test_accuracy_sweep, test_precision_sweep, test_recall_sweep, test_f1_sweep = evaluate_predictions(
-        y_test, test_pred_sweep
-    )
-    validation_results.append(
-        {
-            "contamination": contamination,
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1": f1,
-        }
-    )
-    test_results.append(
-        {
-            "contamination": contamination,
-            "accuracy": test_accuracy_sweep,
-            "precision": test_precision_sweep,
-            "recall": test_recall_sweep,
-            "f1": test_f1_sweep,
-        }
-    )
+for params in parameter_grid:
+    for contamination in contamination_values:
+        sweep_model = IsolationForest(
+            n_estimators=params["n_estimators"],
+            contamination=contamination,
+            max_samples=params["max_samples"],
+            max_features=params["max_features"],
+            bootstrap=params["bootstrap"],
+            random_state=42,
+        )
+        sweep_model.fit(X_train)
+        val_scores = -sweep_model.decision_function(X_val)
+        test_scores_sweep = -sweep_model.decision_function(X_test)
+        threshold_f1, threshold_precision, threshold_recall, threshold_accuracy, threshold = tune_threshold(
+            y_val,
+            val_scores,
+        )
+        val_pred = (val_scores >= threshold).astype(int)
+        test_pred_sweep = (test_scores_sweep >= threshold).astype(int)
+        accuracy, precision, recall, f1 = evaluate_predictions(y_val, val_pred)
+        test_accuracy_sweep, test_precision_sweep, test_recall_sweep, test_f1_sweep = evaluate_predictions(
+            y_test, test_pred_sweep
+        )
+        validation_results.append(
+            {
+                "contamination": contamination,
+                "n_estimators": params["n_estimators"],
+                "max_samples": params["max_samples"],
+                "max_features": params["max_features"],
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "threshold": threshold,
+            }
+        )
+        test_results.append(
+            {
+                "contamination": contamination,
+                "n_estimators": params["n_estimators"],
+                "max_samples": params["max_samples"],
+                "max_features": params["max_features"],
+                "accuracy": test_accuracy_sweep,
+                "precision": test_precision_sweep,
+                "recall": test_recall_sweep,
+                "f1": test_f1_sweep,
+                "threshold": threshold,
+            }
+        )
 
 results_df = pd.DataFrame(validation_results)
 test_results_df = pd.DataFrame(test_results)
@@ -155,20 +189,31 @@ print("\nContamination Sweep (Test Set)")
 print(test_results_df.to_string(index=False, float_format=lambda value: f"{value:.4f}"))
 
 selected_row = results_df.sort_values(
-    by=["f1", "precision"],
-    ascending=[False, False],
+    by=["f1", "precision", "recall"],
+    ascending=[False, False, False],
 ).iloc[0]
 
 selected_contamination = float(selected_row["contamination"])
+selected_threshold = float(selected_row["threshold"])
+selected_n_estimators = int(selected_row["n_estimators"])
+selected_max_samples = selected_row["max_samples"]
+selected_max_features = float(selected_row["max_features"])
 print(f"\nSelected contamination: {selected_contamination:.2f}")
+print(f"Selected threshold: {selected_threshold:.6f}")
+print(f"Selected n_estimators: {selected_n_estimators}")
+print(f"Selected max_samples: {selected_max_samples}")
+print(f"Selected max_features: {selected_max_features:.2f}")
 
 # ==============================================================================
 # TRAIN FINAL MODEL
 # ==============================================================================
 
 model = IsolationForest(
-    n_estimators=200,
+    n_estimators=selected_n_estimators,
     contamination=selected_contamination,
+    max_samples=selected_max_samples,
+    max_features=selected_max_features,
+    bootstrap=False,
     random_state=42
 )
 
@@ -178,13 +223,13 @@ model.fit(X_train)
 # PREDICTIONS
 # ==============================================================================
 
-train_pred = np.where(model.predict(X_train) == -1, 1, 0)
-val_pred = np.where(model.predict(X_val) == -1, 1, 0)
-test_pred = np.where(model.predict(X_test) == -1, 1, 0)
+train_scores = -model.decision_function(X_train)
+val_scores = -model.decision_function(X_val)
+test_scores = -model.decision_function(X_test)
 
-train_scores = model.decision_function(X_train)
-val_scores = model.decision_function(X_val)
-test_scores = model.decision_function(X_test)
+train_pred = (train_scores >= selected_threshold).astype(int)
+val_pred = (val_scores >= selected_threshold).astype(int)
+test_pred = (test_scores >= selected_threshold).astype(int)
 
 train_accuracy, train_precision, train_recall, train_f1 = evaluate_predictions(y_train_raw, train_pred)
 val_accuracy, val_precision, val_recall, val_f1 = evaluate_predictions(y_val, val_pred)
@@ -209,7 +254,12 @@ with open(MODEL_SAVE_PATH / "anomaly_scaler.pkl", "wb") as f:
 
 feature_stats = {
     "mean": X_train_raw.mean(),
-    "std": X_train_raw.std()
+    "std": X_train_raw.std(),
+    "decision_threshold": selected_threshold,
+    "selected_contamination": selected_contamination,
+    "selected_n_estimators": selected_n_estimators,
+    "selected_max_samples": selected_max_samples,
+    "selected_max_features": selected_max_features,
 }
 with open(MODEL_SAVE_PATH / "feature_stats.pkl", "wb") as f:
     pickle.dump(feature_stats, f)
@@ -241,11 +291,11 @@ sns.histplot(
 )
 
 ax.axvline(
-    0,
+    selected_threshold,
     color="red",
     linestyle="--",
     linewidth=2,
-    label="Decision Boundary"
+    label="Calibrated Threshold"
 )
 
 ax.set_title("Anomaly Score Distribution")
@@ -324,9 +374,11 @@ Test Anomalies     : {anomaly:,}
 
 Selected Contamination : {model.contamination}
 
+Decision Threshold : {selected_threshold:.6f}
+
 Test Anomaly Rate  : {(100 * anomaly / len(X_test_raw)):.2f}%
 
-Features      : {len(FEATURES)}
+Features      : {len(MODEL_FEATURES)}
 
 Algorithm     : Isolation Forest
 """

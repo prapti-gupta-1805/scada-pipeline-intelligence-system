@@ -8,11 +8,15 @@ pipeline condition (Normal, Moderate or Critical).
 import pickle
 import warnings
 from pathlib import Path
+import sys
 
 import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ==============================================================================
 # CONFIGURATION

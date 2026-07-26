@@ -3,7 +3,6 @@ from typing import Optional
 
 
 class AnomalyFeatures(BaseModel):
-    segment_id: int
     pressure: float
     flow_rate: float
     temperature: float
@@ -12,7 +11,6 @@ class AnomalyFeatures(BaseModel):
     pump_speed: float
     compressor_state: int
     energy_consumption: float
-    alarm_triggered: int
     hour: int
     day_of_week: int
     day_of_month: int

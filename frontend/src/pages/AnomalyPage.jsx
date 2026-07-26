@@ -5,7 +5,6 @@ import PredictionCard from '../components/PredictionCard';
 import { predictAnomaly } from '../lib/api';
 
 const defaultValues = {
-  segment_id: '',
   pressure: '',
   flow_rate: '',
   temperature: '',
@@ -14,7 +13,6 @@ const defaultValues = {
   pump_speed: '',
   compressor_state: '',
   energy_consumption: '',
-  alarm_triggered: '',
   hour: '',
   day_of_week: '',
   day_of_month: '',
@@ -47,7 +45,6 @@ export default function AnomalyPage() {
     try {
       const payload = {
         ...form,
-        segment_id: Number(form.segment_id),
         pressure: Number(form.pressure),
         flow_rate: Number(form.flow_rate),
         temperature: Number(form.temperature),
@@ -56,7 +53,6 @@ export default function AnomalyPage() {
         pump_speed: Number(form.pump_speed),
         compressor_state: Number(form.compressor_state),
         energy_consumption: Number(form.energy_consumption),
-        alarm_triggered: Number(form.alarm_triggered),
         hour: Number(form.hour),
         day_of_week: Number(form.day_of_week),
         day_of_month: Number(form.day_of_month),

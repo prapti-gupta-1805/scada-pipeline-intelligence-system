@@ -72,7 +72,6 @@ def metadata():
             },
             "anomaly": {
                 "features": [
-                    "segment_id",
                     "pressure",
                     "flow_rate",
                     "temperature",
@@ -81,7 +80,6 @@ def metadata():
                     "pump_speed",
                     "compressor_state",
                     "energy_consumption",
-                    "alarm_triggered",
                     "hour",
                     "day_of_week",
                     "day_of_month",
@@ -89,7 +87,6 @@ def metadata():
             },
             "fault": {
                 "features": [
-                    "segment_id",
                     "pressure",
                     "flow_rate",
                     "temperature",
@@ -98,7 +95,6 @@ def metadata():
                     "pump_speed",
                     "compressor_state",
                     "energy_consumption",
-                    "alarm_triggered",
                     "hour",
                     "day_of_week",
                     "day_of_month",

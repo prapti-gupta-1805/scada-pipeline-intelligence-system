@@ -8,11 +8,15 @@ whether new SCADA measurements are anomalous.
 import pickle
 import warnings
 from pathlib import Path
+import sys
 
 import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ==============================================================================
 # CONFIGURATION
@@ -25,7 +29,6 @@ SCALER_PATH = BASE_DIR / "anomaly_scaler.pkl"
 STATS_PATH = BASE_DIR / "feature_stats.pkl"
 
 FEATURE_COLS = [
-    "segment_id",
     "pressure",
     "flow_rate",
     "temperature",
@@ -34,10 +37,20 @@ FEATURE_COLS = [
     "pump_speed",
     "compressor_state",
     "energy_consumption",
-    "alarm_triggered",
     "hour",
     "day_of_week",
     "day_of_month"
+]
+
+MODEL_FEATURES = [
+    "pressure",
+    "flow_rate",
+    "temperature",
+    "valve_status",
+    "pump_state",
+    "pump_speed",
+    "compressor_state",
+    "energy_consumption",
 ]
 SCORE_MIN = -0.3
 SCORE_MAX = 0.4
@@ -103,7 +116,7 @@ def calculate_feature_deviations(sample_df):
 
     deviations = {}
 
-    for feature in FEATURE_COLS:
+    for feature in MODEL_FEATURES:
 
         value = float(sample_df[feature].iloc[0])
 
@@ -157,16 +170,17 @@ def predict(sample_dict, explain=True):
         )
 
     X = pd.DataFrame([sample_dict])
+    X_model = X[MODEL_FEATURES].copy()
 
-    X_scaled = scaler.transform(X)
-
-    prediction = model.predict(X_scaled)[0]
+    X_scaled = scaler.transform(X_model)
 
     decision_score = model.decision_function(X_scaled)[0]
 
     anomaly_score = float(-decision_score)
 
-    status = "Anomaly" if prediction == -1 else "Normal"
+    decision_threshold = float(feature_stats.get("decision_threshold", 0.0))
+
+    status = "Anomaly" if anomaly_score >= decision_threshold else "Normal"
     confidence = calculate_confidence(anomaly_score)
     risk_level = calculate_risk_level(confidence) 
 
@@ -179,7 +193,7 @@ def predict(sample_dict, explain=True):
 
     if explain:
 
-        deviations = calculate_feature_deviations(X)
+        deviations = calculate_feature_deviations(X_model)
 
         top_features = sorted(
 
@@ -221,11 +235,12 @@ def predict_batch(dataframe):
         raise ValueError(f"Missing columns: {missing_columns}")
 
     X = dataframe[FEATURE_COLS].copy()
-    X_scaled = scaler.transform(X)
+    X_model = X[MODEL_FEATURES].copy()
+    X_scaled = scaler.transform(X_model)
 
-    predictions = model.predict(X_scaled)
     decision_scores = model.decision_function(X_scaled)
     anomaly_scores = -decision_scores
+    decision_threshold = float(feature_stats.get("decision_threshold", 0.0))
 
     # Vectorized normalization for confidence
     normalized_scores = (anomaly_scores - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)
@@ -235,7 +250,7 @@ def predict_batch(dataframe):
     risk_levels = [calculate_risk_level(c) for c in confidences]
 
     results = pd.DataFrame({
-        "status": np.where(predictions == -1, "Anomaly", "Normal"),
+        "status": np.where(anomaly_scores >= decision_threshold, "Anomaly", "Normal"),
         "confidence": np.round(confidences, 3),
         "risk_level": risk_levels,
         "anomaly_score": np.round(anomaly_scores, 4)
@@ -261,8 +276,6 @@ if __name__ == "__main__":
     print("-" * 80)
 
     normal_sample = {
-
-        "segment_id": 25,
         "pressure": 72.5,
         "flow_rate": 4.6,
         "temperature": 32.1,
@@ -271,7 +284,6 @@ if __name__ == "__main__":
         "pump_speed": 1400,
         "compressor_state": 1,
         "energy_consumption": 33.2,
-        "alarm_triggered": 0,
         "hour": 14,
         "day_of_week": 2,
         "day_of_month": 15
@@ -304,8 +316,6 @@ if __name__ == "__main__":
     print("-" * 80)
 
     anomaly_sample = {
-
-        "segment_id": 42,
         "pressure": 110.5,
         "flow_rate": 0.5,
         "temperature": 45.2,
@@ -314,7 +324,6 @@ if __name__ == "__main__":
         "pump_speed": 500,
         "compressor_state": 0,
         "energy_consumption": 15.2,
-        "alarm_triggered": 1,
         "hour": 3,
         "day_of_week": 4,
         "day_of_month": 20
@@ -353,8 +362,6 @@ if __name__ == "__main__":
         anomaly_sample,
 
         {
-
-            "segment_id": 12,
             "pressure": 75,
             "flow_rate": 3.8,
             "temperature": 31,
@@ -363,7 +370,6 @@ if __name__ == "__main__":
             "pump_speed": 1350,
             "compressor_state": 1,
             "energy_consumption": 31,
-            "alarm_triggered": 0,
             "hour": 11,
             "day_of_week": 1,
             "day_of_month": 10

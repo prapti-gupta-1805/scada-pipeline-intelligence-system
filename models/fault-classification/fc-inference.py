@@ -9,8 +9,12 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 from datetime import datetime
+import sys
 import warnings
 warnings.filterwarnings('ignore')
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ============================================================================
 # CONFIGURATION
@@ -23,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'scada_model.pkl'
 SCALER_PATH = BASE_DIR / 'scaler.pkl'
 
-FEATURE_COLS = ['segment_id', 'pressure', 'flow_rate', 'temperature', 
+FEATURE_COLS = ['pressure', 'flow_rate', 'temperature',
                 'valve_status', 'pump_state', 'pump_speed', 'compressor_state',
-                'energy_consumption', 'alarm_triggered', 'hour', 'day_of_week', 'day_of_month']
+                'energy_consumption', 'hour', 'day_of_week', 'day_of_month']
 
 CLASS_NAMES = ['Normal', 'Leak', 'Blockage', 'Surge', 'Degradation']
 
@@ -55,10 +59,10 @@ def predict(sample_dict, explain=True):
     Parameters:
     -----------
     sample_dict : dict
-        Dictionary with keys: segment_id, pressure, flow_rate, temperature,
+        Dictionary with keys: pressure, flow_rate, temperature,
                              valve_status, pump_state, pump_speed,
                              compressor_state, energy_consumption,
-                             alarm_triggered, hour, day_of_week, day_of_month
+                             hour, day_of_week, day_of_month
 
     explain : bool
         If True, provide SHAP explanation and save a SHAP plot.
@@ -74,7 +78,7 @@ def predict(sample_dict, explain=True):
         raise ValueError(f"Missing features: {missing_features}")
 
     # Create dataframe and scale
-    X = pd.DataFrame([sample_dict])
+    X = pd.DataFrame([sample_dict])[FEATURE_COLS]
     X_scaled = scaler.transform(X)
 
     # Get prediction
@@ -200,7 +204,6 @@ if __name__ == "__main__":
     print("-" * 80)
     
     normal_sample = {
-        'segment_id': 25,
         'pressure': 72.5,
         'flow_rate': 4.6,
         'temperature': 32.1,
@@ -209,7 +212,6 @@ if __name__ == "__main__":
         'pump_speed': 1400,
         'compressor_state': 1,
         'energy_consumption': 33.2,
-        'alarm_triggered': 0,
         'hour': 14,
         'day_of_week': 2,
         'day_of_month': 15
@@ -239,7 +241,6 @@ if __name__ == "__main__":
     print("-" * 80)
     
     blockage_sample = {
-        'segment_id': 16,
         'pressure': 95.2,
         'flow_rate': 1.8,
         'temperature': 30.8,
@@ -248,7 +249,6 @@ if __name__ == "__main__":
         'pump_speed': 1320,
         'compressor_state': 1,
         'energy_consumption': 37.5,
-        'alarm_triggered': 1,
         'hour': 10,
         'day_of_week': 1,
         'day_of_month': 8
@@ -279,21 +279,21 @@ if __name__ == "__main__":
     
     batch_samples = pd.DataFrame([
         {
-            'segment_id': 10, 'pressure': 70.5, 'flow_rate': 4.5, 'temperature': 32.0,
+            'pressure': 70.5, 'flow_rate': 4.5, 'temperature': 32.0,
             'valve_status': 1, 'pump_state': 1, 'pump_speed': 1380, 'compressor_state': 1,
-            'energy_consumption': 32.1, 'alarm_triggered': 0, 'hour': 9, 
+            'energy_consumption': 32.1, 'hour': 9,
             'day_of_week': 0, 'day_of_month': 1
         },
         {
-            'segment_id': 20, 'pressure': 88.3, 'flow_rate': 2.2, 'temperature': 31.5,
+            'pressure': 88.3, 'flow_rate': 2.2, 'temperature': 31.5,
             'valve_status': 2, 'pump_state': 1, 'pump_speed': 1300, 'compressor_state': 1,
-            'energy_consumption': 36.8, 'alarm_triggered': 1, 'hour': 12, 
+            'energy_consumption': 36.8, 'hour': 12,
             'day_of_week': 2, 'day_of_month': 5
         },
         {
-            'segment_id': 35, 'pressure': 75.0, 'flow_rate': 3.5, 'temperature': 33.2,
+            'pressure': 75.0, 'flow_rate': 3.5, 'temperature': 33.2,
             'valve_status': 1, 'pump_state': 0, 'pump_speed': 0, 'compressor_state': 1,
-            'energy_consumption': 20.5, 'alarm_triggered': 0, 'hour': 15, 
+            'energy_consumption': 20.5, 'hour': 15,
             'day_of_week': 3, 'day_of_month': 10
         }
     ])
@@ -310,7 +310,6 @@ if __name__ == "__main__":
     print("-" * 80)
     
     anomalous_sample = {
-        'segment_id': 42,
         'pressure': 110.5,        # Extremely high
         'flow_rate': 0.5,         # Very low
         'temperature': 45.2,      # Very high
@@ -319,7 +318,6 @@ if __name__ == "__main__":
         'pump_speed': 500,        # Very low
         'compressor_state': 0,    # Off
         'energy_consumption': 15.2,
-        'alarm_triggered': 1,
         'hour': 3,
         'day_of_week': 4,
         'day_of_month': 20
