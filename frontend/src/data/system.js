@@ -6,9 +6,9 @@ export const appTagline =
 
 export const navItems = [
   { to: '/', label: 'Dashboard', icon: Gauge, description: 'Live operational overview' },
-  { to: '/anomaly-detection', label: 'Anomaly Detection', icon: ShieldCheck, description: 'Spot abnormal telemetry' },
-  { to: '/fault-classification', label: 'Fault Classification', icon: AlertTriangle, description: 'Classify failure modes' },
-  { to: '/predictive-maintenance', label: 'Predictive Maintenance', icon: Cpu, description: 'Forecast intervention risk' },
+  { to: '/anomaly', label: 'Anomaly Detection', icon: ShieldCheck, description: 'Spot abnormal telemetry' },
+  { to: '/fault', label: 'Fault Classification', icon: AlertTriangle, description: 'Classify failure modes' },
+  { to: '/maintenance', label: 'Predictive Maintenance', icon: Cpu, description: 'Forecast intervention risk' },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, description: 'Model performance evidence' },
 ];
 
