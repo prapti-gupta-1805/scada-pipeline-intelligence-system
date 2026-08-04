@@ -6,7 +6,7 @@
 
 ## Overview
 
-This project is a proof-of-concept SCADA analytics platform with a React dashboard frontend and a FastAPI backend. It demonstrates how telemetry inputs can be used to infer fault conditions, detect anomalous observations, and estimate maintenance risk using machine learning inference modules.
+This project is a proof-of-concept SCADA analytics platform with a React dashboard frontend and a FastAPI backend. It demonstrates how telemetry inputs can be used to infer fault conditions, detect anomalous observations, and estimate maintenance risk using machine learning inference modules. The current UI includes dedicated pages for dashboard monitoring, fault analysis, anomaly review, predictive maintenance, analytics visuals, and project overview information.
 
 ---
 
@@ -15,7 +15,7 @@ This project is a proof-of-concept SCADA analytics platform with a React dashboa
 - Fault classification from SCADA measurements
 - Anomaly detection using Isolation Forest scoring
 - Predictive maintenance condition prediction with XGBoost
-- React + Vite dashboard with model input forms and results panels
+- React + Vite dashboard with model input forms, results panels, analytics visuals, and an About page
 - FastAPI backend with health checks and metadata endpoints
 - SHAP-based feature explainability in model inference modules
 
@@ -25,7 +25,7 @@ This project is a proof-of-concept SCADA analytics platform with a React dashboa
 
 The repository is organized into separate layers:
 
-- **Frontend:** `frontend/` contains a React application built with Vite and Tailwind CSS.
+- **Frontend:** `frontend/` contains a React application built with Vite, Tailwind CSS, and React Router DOM, including dashboard, analytics, and About pages.
 - **Backend:** `backend/` contains a FastAPI server exposing inference routes and metadata.
 - **Models:** `models/` contains inference scripts and serialized model artifacts for each workflow.
 - **Data:** `data/` contains sample CSV datasets used for model development.

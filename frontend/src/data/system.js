@@ -1,4 +1,4 @@
-import { AlertTriangle, BarChart3, Cpu, Gauge, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertTriangle, BarChart3, Cpu, Gauge, Info, ShieldCheck, Sparkles } from 'lucide-react';
 
 export const appName = 'SCADA Pipeline Intelligence System';
 export const appTagline =
@@ -10,6 +10,7 @@ export const navItems = [
   { to: '/fault', label: 'Fault Classification', icon: AlertTriangle, description: 'Classify failure modes' },
   { to: '/maintenance', label: 'Predictive Maintenance', icon: Cpu, description: 'Forecast intervention risk' },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, description: 'Model performance evidence' },
+  { to: '/about', label: 'About', icon: Info, description: 'Project overview and design intent' },
 ];
 
 export const routeTitles = {
@@ -22,6 +23,7 @@ export const routeTitles = {
   '/predictive-maintenance': 'Predictive Maintenance',
   '/maintenance': 'Predictive Maintenance',
   '/analytics': 'Analytics',
+  '/about': 'About',
 };
 
 const sharedTelemetryFields = [
@@ -146,6 +148,52 @@ export const analyticsModelCards = [
     description: 'Saved model summary artifact for the maintenance pipeline.',
   },
 ];
+
+export const architectureFlow = [
+  {
+    title: 'Ingest',
+    detail: 'SCADA telemetry is collected from sensors, pumps, valves and other field assets in near real time.',
+  },
+  {
+    title: 'Analyse',
+    detail: 'Anomaly detection and fault classification models screen the data for abnormal behaviour and likely failure modes.',
+  },
+  {
+    title: 'Predict',
+    detail: 'The maintenance model estimates remaining useful life and highlights the next intervention window.',
+  },
+  {
+    title: 'Prioritise',
+    detail: 'Operators receive actionable risk labels and recommendations so they can focus on the highest-impact issues first.',
+  },
+  {
+    title: 'Respond',
+    detail: 'The dashboard turns analysis into rapid operational decisions with explainable, review-friendly evidence.',
+  },
+];
+
+export const aboutModels = [
+  {
+    title: 'Anomaly detection',
+    description:
+      'This component flags unusual telemetry patterns that may indicate equipment drift, leaks or process instability before they become critical.',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Fault classification',
+    description:
+      'This model categorises likely failure modes so engineers can identify the probable root cause quickly and communicate it clearly.',
+    icon: AlertTriangle,
+  },
+  {
+    title: 'Predictive maintenance',
+    description:
+      'The maintenance layer estimates future risk and supports more reliable planning for inspections, servicing and replacements.',
+    icon: Cpu,
+  },
+];
+
+export const techStack = ['React', 'Vite', 'Tailwind CSS', 'FastAPI', 'scikit-learn', 'SHAP', 'XGBoost', 'Isolation Forest'];
 
 export function createEmptyForm(fields, extraValues = {}) {
   return fields.reduce(

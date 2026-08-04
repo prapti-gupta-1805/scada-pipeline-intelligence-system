@@ -5,6 +5,7 @@ import FaultPage from './pages/FaultPage';
 import AnomalyPage from './pages/AnomalyPage';
 import MaintenancePage from './pages/MaintenancePage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import AboutPage from './pages/AboutPage';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/anomaly" element={<AnomalyPage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Route>
     </Routes>
   );

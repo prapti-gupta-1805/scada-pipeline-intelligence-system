@@ -25,7 +25,7 @@ export default function Footer() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex flex-col gap-1 text-sm">
           <span className="text-slate-300 font-semibold">{appName}</span>
-          <span className="text-slate-500">AI-powered Pipeline Monitoring</span>
+          <span className="text-slate-500">SCADA analytics for pipeline operations</span>
         </div>
 
         <div className="flex items-center gap-4">

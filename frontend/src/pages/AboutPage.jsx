@@ -20,7 +20,7 @@ export default function AboutPage() {
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{appName}</h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{appTagline}</p>
           </div>
-          <StatusBadge label="Enterprise ready" tone="success" />
+          <StatusBadge label="Proof-of-concept" tone="success" />
         </div>
       </motion.section>
 
@@ -70,34 +70,6 @@ export default function AboutPage() {
         </div>
       </ChartCard>
 
-      <ChartCard title="Design intent" subtitle="What this UI is optimised for" note="Product thinking">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-950">For operators</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Fast triage, clear status labels and plain-language recommendations make the dashboard usable during live incidents.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-950">For reviewers</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              The analytics section surfaces confusion matrices, feature importances and SHAP-style evidence so the ML work can stand on its own.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-950">For integration</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              The data layer expects FastAPI responses, connecting the frontend directly to live backend inference services without changing the layouts.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-950">For portfolio review</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              The interface intentionally looks like industrial software, not a student demo, so the project reads as a product rather than a presentation deck.
-            </p>
-          </div>
-        </div>
-      </ChartCard>
     </div>
   );
 }
